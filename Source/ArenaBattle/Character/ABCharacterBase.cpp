@@ -4,6 +4,9 @@
 #include "ABCharacterControlData.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ABComboActionData.h"
+#include "Components/CapsuleComponent.h"
+#include "Physics/ABCollision.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AABCharacterBase::AABCharacterBase()
@@ -197,4 +200,93 @@ void AABCharacterBase::ComboCheck()
 			bHasNextComboCommand = false;
 		}
 	}
+}
+
+void AABCharacterBase::AttackHitCheck()
+{
+	// 공격 범위.
+	const float AttackRange = 40.0f;
+
+	// 트레이스에 사용할 구체의 반지름.
+	const float AttackRadius = 50.0f;
+
+	// 콜리전에 사용할 콜리전 파라미터 설정.
+	// 나를 제외해달라고 설정하기 위해.
+	FCollisionQueryParams Params(
+		SCENE_QUERY_STAT(Attack),
+		false,
+		this
+	);
+
+	// 충돌 판정 결과 정보를 반환 받을 변수.
+	FHitResult OutHitResult;
+
+	// 트레이스 시작 위치.
+	// 액터 위치 + 캡슐의 반지름 만큼 앞으로 떨어뜨린 위치.
+	FVector Start
+		= GetActorLocation()
+		+ GetActorForwardVector()
+		* GetCapsuleComponent()->GetScaledCapsuleRadius();
+
+	// 트레이스 끝 위치.
+	// 시작 위치 + 공격 범위 만큼 앞으로 떨어뜨린 위치.
+	FVector End
+		= Start
+		+ GetActorForwardVector()
+		* AttackRange;
+
+	// 충돌 판정 처리.
+	bool HitDetected = GetWorld()->SweepSingleByChannel(
+		OutHitResult,
+		Start,
+		End,
+		FQuat::Identity,
+		CCHANNEL_ABACTION,
+		FCollisionShape::MakeSphere(AttackRadius),
+		Params
+	);
+
+	// 충돌이 감지되었으면 대미지 전달.
+	if (HitDetected)
+	{
+		// 전달할 대미지 양.
+		const float AttackDamage = 30.0f;
+
+		// 대미지 이벤트 변수.
+		FDamageEvent DamageEvent;
+
+		// 충돌이 감지된 액터에 TakeDamage 함수 호출.
+		OutHitResult.GetActor()->TakeDamage(
+			AttackDamage,
+			DamageEvent,
+			GetController(),
+			this
+		);
+	}
+
+	// 디버그 구성일 때만 그리도록 전처리.
+#if ENABLE_DRAW_DEBUG
+
+	// 캡슐의 중심 위치.
+	FVector CapsuleOrigin
+		= Start + (End - Start) * 0.5f;
+
+	// 캡슐 높이의 반.
+	float CapsuleHalfHeight = AttackRange * 0.5f;
+
+	// 표시할 색상.
+	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
+
+	// 충돌 디버깅 정보 시각화.
+	DrawDebugCapsule(
+		GetWorld(),
+		CapsuleOrigin,
+		CapsuleHalfHeight,
+		AttackRange,
+		FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(),
+		DrawColor,
+		false,
+		5.0f
+	);
+#endif
 }

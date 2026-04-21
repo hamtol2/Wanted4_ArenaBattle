@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interface/ABAnimationAttackInterface.h"
 #include "ABCharacterBase.generated.h"
 
 // 열거형 (입력 컨트롤을 관리하기 위함).
@@ -15,13 +16,18 @@ enum class ECharacterControlType : uint8
 };
 
 UCLASS()
-class ARENABATTLE_API AABCharacterBase : public ACharacter
+class ARENABATTLE_API AABCharacterBase 
+	: public ACharacter, 
+	public IABAnimationAttackInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	AABCharacterBase();
+
+	// 공격 감지 함수.
+	virtual void AttackHitCheck() override;
 
 protected:
 
@@ -72,4 +78,6 @@ protected:
 	// 콤보 점프를 판정할 때 사용할 플래그.
 	UPROPERTY(VisibleAnywhere, Category = Attack)
 	bool bHasNextComboCommand = false;
+
+	
 };
