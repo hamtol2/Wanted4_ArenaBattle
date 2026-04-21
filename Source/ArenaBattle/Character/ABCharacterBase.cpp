@@ -14,6 +14,39 @@ AABCharacterBase::AABCharacterBase()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 콜리전 프로필 설정.
+	GetCapsuleComponent()->SetCollisionProfileName(CPROFILE_ABCAPSULE);
+
+	// 메시 컴포넌트 설정.
+	GetMesh()->SetRelativeLocationAndRotation(
+		FVector(0.0f, 0.0f, -88.0f),
+		FRotator(0.0f, -90.0f, 0.0f)
+	);
+
+	// 메시 애셋 지정 (검색 필요함).
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CharacterMesh(
+		TEXT("/Game/InfinityBladeWarriors/Character/CompleteCharacters/SK_CharM_Warrior.SK_CharM_Warrior")
+	);
+
+	// 로드 성공했으면 설정.
+	if (CharacterMesh.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(CharacterMesh.Object);
+	}
+
+	// 애님 블루프린트 클래스 정보 지정.
+	static ConstructorHelpers::FClassFinder<UAnimInstance> CharacterAnim(
+		TEXT("/Game/ArenaBattle/Animation/ABP_ABCharacter.ABP_ABCharacter_C")
+	);
+
+	if (CharacterAnim.Succeeded())
+	{
+		GetMesh()->SetAnimInstanceClass(CharacterAnim.Class);
+	}
+
+	// 메시 콜리전 끄기.
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
+
 	// 맵 설정.
 	static ConstructorHelpers::FObjectFinder<UABCharacterControlData> ShoulderDataRef(
 		TEXT("/Game/ArenaBattle/CharacterControl/ABC_Shoulder.ABC_Shoulder")
@@ -36,6 +69,24 @@ AABCharacterBase::AABCharacterBase()
 			QuarterDataRef.Object
 		);
 	}
+
+	// 몽타주 및 액션 데이터 기본 값 설정.
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ComboAttackMontageRef(
+		TEXT("/Game/ArenaBattle/Animation/AM_ComboAttack.AM_ComboAttack")
+	);
+	if (ComboAttackMontageRef.Succeeded())
+	{
+		ComboAttackMontage = ComboAttackMontageRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UABComboActionData> ComboActionDataRef(
+		TEXT("/Game/ArenaBattle/ComboData/ABA_ComboAction.ABA_ComboAction")
+	);
+	if (ComboActionDataRef.Succeeded())
+	{
+		ComboActionData = ComboActionDataRef.Object;
+	}
+
 }
 
 void AABCharacterBase::SetCharacterContolData(
@@ -278,15 +329,49 @@ void AABCharacterBase::AttackHitCheck()
 	FColor DrawColor = HitDetected ? FColor::Green : FColor::Red;
 
 	// 충돌 디버깅 정보 시각화.
+	// 
+	// 오일러 (x/y/z 축 정보로 회전을 표기하는 방식).
+	// - 장점: 직관적으로 이해 가능 -> 사람이 좋아함.
+	// - 단점: 짐(김)벌락(Gimbal Lock)(두 축이 한 축처럼 붙어서 소멸하는 문제).
+	//         계산량 많음.
+	// 쿼터니언(4원수-복소수): x,y,z,w -> 4개의 수로 3차원 회전을 표기.
+	// - 장점: 짐벌락 없음. 정확함. 계산량 적음.
+	// - 단점: 알 수가 없음.
 	DrawDebugCapsule(
 		GetWorld(),
 		CapsuleOrigin,
 		CapsuleHalfHeight,
-		AttackRange,
+		AttackRadius,
 		FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(),
 		DrawColor,
 		false,
 		5.0f
 	);
 #endif
+}
+
+float AABCharacterBase::TakeDamage(
+	float DamageAmount, 
+	FDamageEvent const& DamageEvent, 
+	AController* EventInstigator, 
+	AActor* DamageCauser)
+{
+	Super::TakeDamage(
+		DamageAmount,
+		DamageEvent,
+		EventInstigator,
+		DamageCauser);
+
+	// 죽음 설정.
+	SetDead();
+
+	return DamageAmount;
+}
+
+void AABCharacterBase::SetDead()
+{
+}
+
+void AABCharacterBase::PlayDeadAnimation()
+{
 }

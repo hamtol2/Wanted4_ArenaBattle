@@ -29,6 +29,21 @@ public:
 	// 공격 감지 함수.
 	virtual void AttackHitCheck() override;
 
+	// 대미지 처리 함수.
+	virtual float TakeDamage(
+		float DamageAmount, 
+		struct FDamageEvent const& DamageEvent, 
+		class AController* EventInstigator, 
+		AActor* DamageCauser) override;
+
+	// Dead.
+protected:
+	// 죽음 설정 함수.
+	virtual void SetDead();
+
+	// 죽는 애니메이션 재생 함수.
+	void PlayDeadAnimation();
+
 protected:
 
 	// 컨트롤 데이터 설정.
