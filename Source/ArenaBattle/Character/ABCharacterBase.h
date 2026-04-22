@@ -15,6 +15,13 @@ enum class ECharacterControlType : uint8
 	Quarter
 };
 
+// 다중 상속: 여러 부모를 상속하는 형태.
+// -> 쓰지 마시라.
+// -> 따라서 조건부로 잘 사용해야 함.
+// -> "클래스 상속"은 하나만 허용.
+// -> "나머지 다중 상속은 모두 인터페이스로(순수 가상 함수를 가지는 클래스)만"
+// -> 순수 가상 함수를 가진 클래스는 그 자체로는 인스턴스를 생성할 수 없음.
+// -> 로우 레벨 기준에서 왜 안될까??? 링커.
 UCLASS()
 class ARENABATTLE_API AABCharacterBase 
 	: public ACharacter, 
