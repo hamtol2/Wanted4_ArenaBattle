@@ -94,5 +94,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Attack)
 	bool bHasNextComboCommand = false;
 
-	
+	// Dead Section.
+protected:
+	// 죽음 몽타주.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Dead)
+	TObjectPtr<class UAnimMontage> DeadMontage;
+
+	// 죽은 후 대기할 시간 값(단위: 초).
+	float DeadEventDelayTime = 5.0f;
 };
