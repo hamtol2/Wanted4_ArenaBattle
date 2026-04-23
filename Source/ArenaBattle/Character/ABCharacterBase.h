@@ -143,4 +143,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Widget)
 	TObjectPtr<class UABWidgetComponent> HpBar;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
+	TObjectPtr<class USkeletalMeshComponent> Weapon;
 };
