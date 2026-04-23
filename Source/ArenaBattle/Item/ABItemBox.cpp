@@ -8,6 +8,9 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Physics/ABCollision.h"
 
+#include "Interface/ABCharacterItemInterface.h"
+#include "ABItemData.h"
+
 // Sets default values
 AABItemBox::AABItemBox()
 {
@@ -78,6 +81,22 @@ void AABItemBox::OnOverlapBegin(
 	bool bFromSweep, 
 	const FHitResult& SweepResult)
 {
+	// 꽝도 있다고 가정.
+	if (!Item)
+	{
+		Destroy();
+		return;
+	}
+
+	// 아이템이 설정되어 있으면,
+	// 캐릭터에 아이템 획득 메시지 전달 (인터페이스를 통해).
+	IABCharacterItemInterface* OverlappingPawn 
+		= Cast<IABCharacterItemInterface>(OtherActor);
+	if (OverlappingPawn)
+	{
+		OverlappingPawn->TakeItem(Item);
+	}
+
 	// 파티클 재생.
 	Effect->Activate();
 

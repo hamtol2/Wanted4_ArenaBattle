@@ -28,7 +28,8 @@ protected:
 
 	// 파티클 재생 종료 시 발행되는 이벤트에 구독할 함수.
 	UFUNCTION()
-	void OnEffectFinished(class UParticleSystemComponent* PSystem);
+	void OnEffectFinished(
+		class UParticleSystemComponent* PSystem);
 
 protected:
 	// 박스 컴포넌트(충돌).
@@ -42,4 +43,8 @@ protected:
 	// 파티클 시스템 컴포넌트.
 	UPROPERTY(VisibleAnywhere, Category = Box)
 	TObjectPtr<class UParticleSystemComponent> Effect;
+
+	// 아이템 정보.
+	UPROPERTY(EditAnywhere, Category = Item)
+	TObjectPtr<class UABItemData> Item;
 };
