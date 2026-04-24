@@ -11,6 +11,8 @@
 #include "Interface/ABCharacterItemInterface.h"
 #include "ABItemData.h"
 
+#include "Engine/AssetManager.h"
+
 // Sets default values
 AABItemBox::AABItemBox()
 {
@@ -37,7 +39,7 @@ AABItemBox::AABItemBox()
 
 	// 콜리전 프로필 설정.
 	Trigger->SetCollisionProfileName(CPROFILE_ABTRIGGER);
-	
+
 	// 박스 크기 조정.
 	Trigger->SetBoxExtent(FVector(40.0f, 42.0f, 30.0f));
 
@@ -73,12 +75,48 @@ AABItemBox::AABItemBox()
 	}
 }
 
+void AABItemBox::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// PrimaryAssetId 목록을 활용한 랜덤 아이템 데이터 설정.
+	UAssetManager& Manager = UAssetManager::Get();
+
+	// 애셋 목록 받아오기.
+	TArray<FPrimaryAssetId> Assets;
+	Manager.GetPrimaryAssetIdList("ABItemData", Assets);
+	// 예외처리.
+	ensureAlways(Assets.Num() > 0);
+
+	// 랜덤 인덱스 선택.
+	int32 RandomIndex = FMath::RandRange(0, Assets.Num() - 1);
+
+	// 소프트 레퍼런스로 애셋을 참조.
+	// FSoftObjectPtr 소프트 레퍼런스는 일종의 경로 값이기 때문에
+	// 애셋을 사용하려면 명시적으로 로드가 필요함.
+	FSoftObjectPtr AssetPtr(
+		Manager.GetPrimaryAssetPath(Assets[RandomIndex])
+	);
+
+	// 애셋 로드.
+	if (AssetPtr.IsPending())
+	{
+		AssetPtr.LoadSynchronous();
+	}
+
+	// 로드한 애셋을 아이템으로 설정.
+	Item = Cast<UABItemData>(AssetPtr.Get());
+
+	// 제대로 설정됐는지 확인.
+	ensureAlways(Item);
+}
+
 void AABItemBox::OnOverlapBegin(
-	UPrimitiveComponent* OverlappedComponent, 
-	AActor* OtherActor, 
-	UPrimitiveComponent* OtherComp, 
-	int32 OtherBodyIndex, 
-	bool bFromSweep, 
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
 	// 꽝도 있다고 가정.
@@ -90,7 +128,7 @@ void AABItemBox::OnOverlapBegin(
 
 	// 아이템이 설정되어 있으면,
 	// 캐릭터에 아이템 획득 메시지 전달 (인터페이스를 통해).
-	IABCharacterItemInterface* OverlappingPawn 
+	IABCharacterItemInterface* OverlappingPawn
 		= Cast<IABCharacterItemInterface>(OtherActor);
 	if (OverlappingPawn)
 	{
