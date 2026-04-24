@@ -29,6 +29,11 @@ public:
 	// Sets default values for this actor's properties
 	AABStageGimmick();
 
+protected:
+	// 이 함수는 트랜스폼 변경 뿐 아니라, 다른 속성이 변경되더라도 호출됨.
+	virtual void OnConstruction(
+		const FTransform& Transform) override;
+
 	// Stage Section.
 protected:
 	// 스테이지를 보여줄 메시 컴포넌트.
@@ -92,4 +97,53 @@ protected:
 	void SetFight();
 	void SetChooseReward();
 	void SetChooseNext();
+
+	// Fight Setcion.
+protected:
+	// 대전할 NPC 클래스 지정.
+	UPROPERTY(EditAnywhere, Category = Fight)
+	TSubclassOf<class AABCharacterNonPlayer> OpponentClass;
+
+	// NPC 생성까지 대기할 시간.
+	UPROPERTY(EditAnywhere, Category = Fight)
+	float OpponentSpawnTime;
+
+	// NPC를 없앴을 때 실행할 함수.
+	UFUNCTION()
+	void OnOpponentDestroyed(AActor* DestroyActor);
+
+	// 대전 상태 생성에 사용할 타이머 핸들.
+	FTimerHandle OpponentSpawnTimerHandle;
+
+	// 생성 타이머가 종료될 때 호출할 함수.
+	void OnOpponentSpawn();
+
+	// Reward Section.
+protected:
+	// 보상용 아이템 상자 클래스.
+	UPROPERTY(VisibleAnywhere, Category = Reward)
+	TSubclassOf<class AABItemBox> RewardBoxClass;
+
+	// 생성된 아이템 박스를 저장할 배열 변수.
+	// 아이템 상자는 스테이지 액터와는 무관.
+	// 따라서 강참조 보다는 약참조가 적절.
+	UPROPERTY(VisibleAnywhere, Category = Reward)
+	TArray<TWeakObjectPtr<class AABItemBox>> RewardBoxes;
+
+	// 아이템 상자 생성 위치 (맵으로 관리).
+	TMap<FName, FVector> RewardBoxLocations;
+
+	// 생성된 상자에서 오버랩 이벤트가 발생하면 호출할 함수.
+	UFUNCTION()
+	void OnRewardTriggerBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	// 아이템 상자 생성 함수.
+	void SpawnRewardBoxes();
 };
