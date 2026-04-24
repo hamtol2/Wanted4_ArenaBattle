@@ -321,6 +321,9 @@ void AABStageGimmick::SetChooseReward()
 
 	// 문 닫기.
 	CloseAllGates();
+
+	// 아이템 상자 생성.
+	SpawnRewardBoxes();
 }
 
 void AABStageGimmick::SetChooseNext()
@@ -386,8 +389,64 @@ void AABStageGimmick::OnRewardTriggerBeginOverlap(
 	bool bFromSweep, 
 	const FHitResult& SweepResult)
 {
+	// 캐릭터가 아이템 상자를 획득하면, 나머지 상자 처리.
+	for (const auto& RewardBox : RewardBoxes)
+	{
+		// 아이템 상자를 약참조하고 있기 때문에 확인.
+		if (RewardBox.IsValid())
+		{
+			// 포인터 가져오기.
+			AABItemBox* ValidItemBox = RewardBox.Get();
+
+			// 부딪힌 아이템 상자 검출.
+			AActor* OverlappedActor = OverlappedComponent->GetOwner();
+
+			// 부딪히지 않은 상자는 제거.
+			if (OverlappedActor != ValidItemBox)
+			{
+				ValidItemBox->Destroy();
+			}
+		}
+	}
+
+	// Next 단계로 이동.
+	SetState(EStageState::Next);
 }
 
 void AABStageGimmick::SpawnRewardBoxes()
 {
+	// 아이템 상자 생성.
+	for (const auto& RewardBoxLocation : RewardBoxLocations)
+	{
+		// 상자 위치.
+		FVector WorldSpawnLocation
+			= GetActorLocation() + RewardBoxLocation.Value
+			+ FVector(0.0f, 0.0f, 30.0f);
+
+		// 상자 생성.
+		AActor* ItemActor = GetWorld()->SpawnActor(
+			RewardBoxClass,
+			&WorldSpawnLocation,
+			&FRotator::ZeroRotator
+		);
+
+		// 아이템 상자로 형변환.
+		AABItemBox* RewardBoxActor
+			= Cast<AABItemBox>(ItemActor);
+		if (RewardBoxActor)
+		{
+			// 상자에 태그 추가.
+			// 나중에 어느 상자와 부딪혔는지 알기 위해.
+			RewardBoxActor->Tags.Add(RewardBoxLocation.Key);
+
+			// 박스가 BeginOverlap될 때 발행되는 이벤트에 등록.
+			RewardBoxActor->GetTrigger()->OnComponentBeginOverlap.AddDynamic(
+				this,
+				&AABStageGimmick::OnRewardTriggerBeginOverlap
+			);
+
+			// 생성된 박스를 배열에 추가.
+			RewardBoxes.Add(RewardBoxActor);
+		}
+	}
 }
