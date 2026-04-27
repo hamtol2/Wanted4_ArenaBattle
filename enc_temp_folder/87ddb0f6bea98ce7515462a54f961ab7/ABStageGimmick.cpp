@@ -359,39 +359,35 @@ void AABStageGimmick::OnOpponentSpawn()
 	// 특정 위치(원점인데 살짝 높이만 보정)를 지정해서 사용.
 	const FVector SpawnLocation
 		= GetActorLocation() + FVector::UpVector * 88.0f;
-	const FTransform SpawnTransform(SpawnLocation);
 
 	// NPC 생성.
-	AABCharacterNonPlayer* ABOpponentCharacter
-		= GetWorld()->SpawnActorDeferred<AABCharacterNonPlayer>(
-			OpponentClass,
-			SpawnTransform
-		);
+	AActor* OpponentActor = GetWorld()->SpawnActor(
+		OpponentClass,
+		&SpawnLocation,
+		&FRotator::ZeroRotator
+	);
 
-	//// 예외처리 (생성한 액터가 우리가 의도한 타입인지 확인).
-	//AABCharacterNonPlayer* ABOpponentCharacter
-	//	= Cast<AABCharacterNonPlayer>(OpponentActor);
+	// 예외처리 (생성한 액터가 우리가 의도한 타입인지 확인).
+	AABCharacterNonPlayer* ABOpponentCharacter
+		= Cast<AABCharacterNonPlayer>(OpponentActor);
 
 	// 형변환에 실패하면 의도한 타입이 아니기 때문에 종료.
 	if (!ABOpponentCharacter)
 	{
 		// 선택사항..
 		// 발생하면 안되는 문제.
-		//ABOpponentCharacter->Destroy();
+		OpponentActor->Destroy();
 		return;
 	}
 
 	// NPC가 죽었을 때 발행되는 이벤트에 함수 등록.
-	ABOpponentCharacter->OnDestroyed.AddDynamic(
+	OpponentActor->OnDestroyed.AddDynamic(
 		this,
 		&AABStageGimmick::OnOpponentDestroyed
 	);
 
 	// 현재 스테이지 순번을 NPC 레벨로 설정.
 	ABOpponentCharacter->SetLevel(CurrentStageNum);
-
-	// 초기화 작업을 완료했으면 처리 완료했다고 전달.
-	ABOpponentCharacter->FinishSpawning(SpawnTransform);
 }
 
 void AABStageGimmick::OnRewardTriggerBeginOverlap(
