@@ -46,6 +46,8 @@ public:
 
 	FORCEINLINE float GetCurrentHp() const { return CurrentHp; }
 
+	FORCEINLINE float GetAttackRadius() const { return AttackRadius; }
+
 	// 대미지 적용 함수.
 	float ApplyDamage(float InDamage);
 
@@ -69,6 +71,10 @@ protected:
 	// 자주 변경되기 때문에 굳이 디스크에 저장 필요하지 않음.
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
 	float CurrentHp;
+
+	// 공격 반경.
+	UPROPERTY(VisibleInstanceOnly, Category = Stat)
+	float AttackRadius;
 
 	// 현재 레벨.
 	UPROPERTY(Transient, VisibleInstanceOnly, Category = Stat)
