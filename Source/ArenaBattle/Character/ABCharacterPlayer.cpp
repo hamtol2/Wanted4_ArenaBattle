@@ -14,6 +14,8 @@
 
 #include "ABCharacterControlData.h"
 
+#include "UI/ABHUDWidget.h"
+
 AABCharacterPlayer::AABCharacterPlayer()
 {
 	// 기본 설정.
@@ -340,4 +342,12 @@ void AABCharacterPlayer::QuarterMove(const FInputActionValue& Value)
 void AABCharacterPlayer::Attack()
 {
 	ProcessComboCommand();
+}
+
+void AABCharacterPlayer::SetupHUDWidget(UABHUDWidget* InHUDWidget)
+{
+	if (InHUDWidget)
+	{
+		// 전달받은 위젯의 함수를 스탯 컴포넌트가 발생하는 델리게이트에 연결(바인딩).
+	}
 }
