@@ -11,6 +11,9 @@
 DECLARE_MULTICAST_DELEGATE(FOnHpZeroDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpChangedDelegate, float/*CurrentHp*/);
 
+// 스탯 정보가 변경될 때 발행할 델리게이트.
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChangedDelegate, const FABCharacterStat& /*BaseStat*/, const FABCharacterStat& /*ModifierStat*/);
+
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ARENABATTLE_API UABCharacterStatComponent : public UActorComponent
@@ -36,11 +39,24 @@ public:
 	//FORCEINLINE float GetMaxHp() const { return MaxHp; }
 	void SetLevelStat(int32 InNewLevel);
 	FORCEINLINE float GetCurrentLevel() const { return CurrentLevel; }
+
+	FORCEINLINE void SetBaseStat(
+		const FABCharacterStat& InBaseStat)
+	{
+		BaseStat = InBaseStat;
+		OnStatChanged.Broadcast(BaseStat, ModifierStat);
+	}
+
 	FORCEINLINE void SetModifierStat(
 		const FABCharacterStat& InModifierStat)
 	{
 		ModifierStat = InModifierStat;
+		OnStatChanged.Broadcast(BaseStat, ModifierStat);
 	}
+
+	FORCEINLINE const FABCharacterStat& GetBaseStat() const { return BaseStat; }
+	FORCEINLINE const FABCharacterStat& GetModifierStat() const { return ModifierStat; }
+
 	FORCEINLINE FABCharacterStat GetTotalStat() const
 	{
 		// 최종 스탯 = 기본 스탯 + 부가 스탯.
@@ -60,6 +76,9 @@ public:
 
 	// Hp가 변동될 때마다 발행할 델리게이트.
 	FOnHpChangedDelegate OnHpChanged;
+
+	// 스탯에 변경될 때마다 발행할 델리게이트.
+	FOnStatChangedDelegate OnStatChanged;
 
 protected:
 	// 체력 정보.

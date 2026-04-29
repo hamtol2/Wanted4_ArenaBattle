@@ -15,6 +15,7 @@
 #include "ABCharacterControlData.h"
 
 #include "UI/ABHUDWidget.h"
+#include "CharacterStat/ABCharacterStatComponent.h"
 
 AABCharacterPlayer::AABCharacterPlayer()
 {
@@ -344,10 +345,20 @@ void AABCharacterPlayer::Attack()
 	ProcessComboCommand();
 }
 
-void AABCharacterPlayer::SetupHUDWidget(UABHUDWidget* InHUDWidget)
+// DI(Dependency Injection).
+void AABCharacterPlayer::SetupHUDWidget(
+	UABHUDWidget* InHUDWidget)
 {
 	if (InHUDWidget)
 	{
-		// 전달받은 위젯의 함수를 스탯 컴포넌트가 발생하는 델리게이트에 연결(바인딩).
+		// 스탯 정보를 UI에 전달.
+		InHUDWidget->UpdateStat(Stat->GetBaseStat(), Stat->GetModifierStat());
+		// HP 정보도 UI에 전달.
+		InHUDWidget->UpdateHpBar(Stat->GetCurrentHp());
+
+		// 전달받은 위젯의 함수를 스탯 컴포넌트가 발생하는 
+		// 델리게이트에 연결(바인딩).
+		Stat->OnStatChanged.AddUObject(InHUDWidget, &UABHUDWidget::UpdateStat);
+		Stat->OnHpChanged.AddUObject(InHUDWidget, &UABHUDWidget::UpdateHpBar);
 	}
 }

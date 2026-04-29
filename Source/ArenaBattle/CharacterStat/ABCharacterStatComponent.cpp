@@ -66,7 +66,8 @@ void UABCharacterStatComponent::SetLevelStat(int32 InNewLevel)
 	);
 
 	// 스탯 데이터 설정.
-	BaseStat = UABGameSingleton::Get().GetCharacterStat(CurrentLevel);
+	//BaseStat = UABGameSingleton::Get().GetCharacterStat(CurrentLevel);
+	SetBaseStat(UABGameSingleton::Get().GetCharacterStat(CurrentLevel));
 
 	// 확인.
 	ensureAlways(BaseStat.MaxHp > 0.0f);
