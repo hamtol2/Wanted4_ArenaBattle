@@ -23,7 +23,10 @@ public:
 
 protected:
 	// Called when the game starts
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
+
+	// 컴포넌트가 초기화될 때 호출되는 함수.
+	virtual void InitializeComponent() override;
 
 	// Setter.
 	void SetHp(float NewHp);

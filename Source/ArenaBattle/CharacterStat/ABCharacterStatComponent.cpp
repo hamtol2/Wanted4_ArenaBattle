@@ -18,16 +18,28 @@ UABCharacterStatComponent::UABCharacterStatComponent()
 
 	// 공격 반경 설정.
 	AttackRadius = 50.0f;
+
+	// InitializeComponent 함수 호출을 위해 true로 설정.
+	bWantsInitializeComponent = true;
 }
 
 
 // Called when the game starts
-void UABCharacterStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
+//void UABCharacterStatComponent::BeginPlay()
+//{
+//	Super::BeginPlay();
+//
+//	// 게임이 시작되면 최대 체력에서 시작하도록 설정.
+//	//SetHp(MaxHp);
+//
+//	// 시작할 때 현재 레벨에 맞는 스탯 데이터 설정.
+//	SetLevelStat(CurrentLevel);
+//	SetHp(BaseStat.MaxHp);
+//}
 
-	// 게임이 시작되면 최대 체력에서 시작하도록 설정.
-	//SetHp(MaxHp);
+void UABCharacterStatComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
 
 	// 시작할 때 현재 레벨에 맞는 스탯 데이터 설정.
 	SetLevelStat(CurrentLevel);
